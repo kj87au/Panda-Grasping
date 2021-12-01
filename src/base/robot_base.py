@@ -4,6 +4,9 @@
 
 """
 
+# IMPORTS
+from math import hypot
+
 
 class BaseArm:
     """
@@ -13,6 +16,7 @@ class BaseArm:
         self._hx = 0.3
         self._hy = 0.
         self._hz = 0.5
+        self._reach = 0.855
 
     @property
     def hx(self):
@@ -46,23 +50,45 @@ class BaseArm:
         self._hz = z
 
     @property
+    def reach(self):
+        return self._reach
+
+    @reach.setter
+    def reach(self, value):
+        self._reach = value
+
+    @property
     def home(self):
         return (self._hx, self._hy, self.hz)
 
-    def check_pose(self, coords):
+    @home.setter
+    def home(self, coords):
+        if not self.check_pose(coords):
+            return
+        self._hx = coord[0]
+        self._hy = coord[1]
+        self._hz = coord[2]
+
+    def check_pose(self, coord):
         """
         Used to check if given coords are valid.
         :Param coords (tuple/list): coords to be checked.
         """
-        if len(coords) != 3:
+        if len(coord) != 3:
             print(f"ERROR: Coords len of {len(coords)} not valid, " +
                   "shoule be 3!")
             return False
 
         # check to see if the coords are of valid type.
         types = [float, int]
-        if not all([True if (type(i) in types) else False for i in coords]):
+        if not all([True if (type(i) in types) else False for i in coord]):
             print(f"Error: All coords need to be Float or Int.")
+            return False
+
+        # check to see if x, y is in the 0.855 reach of the panda.
+        if abs(hypot(coord[0], coord[1])) > 0.855:
+            print(f"ERROR: Value {hypot(coord[0], coord[1])} is outside" +
+                  "Pandas Default reach of 0.85m")
             return False
 
         return True

@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 # ignore .swp files.
-.swp
+*.swp
