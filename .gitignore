@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+ Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -130,3 +130,6 @@ dmypy.json
 
 # ignore .swp files.
 *.swp
+
+# ignore the datasets
+PPR-Net-plus-main/datasets
