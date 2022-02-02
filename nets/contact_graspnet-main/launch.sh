@@ -35,8 +35,8 @@ if [[ "$have_container" -eq 1 ]]; then
   echo "Container Found!"
 else
   echo "Starting Container"
-  echo "sudo docker run -it --gpus all --rm -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash"
-  sudo docker run -it --gpus all --rm -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash
+  echo "sudo docker run -it --gpus all --rm --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash"
+  sudo docker run -it --gpus all --rm --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash
   exit 0
 fi
 
