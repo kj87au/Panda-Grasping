@@ -5,6 +5,11 @@ echo "MAKING IMAGE FOR CONTACT-NET"
 NAME="contact-net"
 echo "IMAGE NAME: $NAME"
 
+# Create a non-root user
+USER="contact"
+ID="1000"
+GID="100"
+
 # Check to see if the image already exists
 have_image="$(sudo docker image ls -a | grep -c $NAME)"
 have_container="$(sudo docker container ls -a | grep -c $NAME)"
@@ -20,7 +25,10 @@ if [[ "$have_image" -eq 1 ]]; then
   echo "Image Found!"
 else
   echo "Building Image!"
-  sudo docker build -f docker/$NAME.Dockerfile -t $NAME .
+  sudo docker build -f docker/$NAME.Dockerfile -t $NAME --build-arg username=$USER \
+  --build-arg uid=$UID \
+  --build-arg gid=$GID \
+  ../
 fi
 
 if [[ "$have_container" -eq 1 ]]; then

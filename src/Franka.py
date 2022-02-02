@@ -4,7 +4,7 @@ import rospy
 import actionlib
 import time
 
-from rv_msgs.msg import (MoveToPoseAction, MoveToPoseGoal,
+from armer_msgs.msg import (MoveToPoseAction, MoveToPoseGoal,
                          ServoToPoseAction, ServoToPoseGoal,
                          MoveToNamedPoseAction, MoveToNamedPoseGoal)
 from geometry_msgs.msg import PoseStamped
@@ -19,15 +19,12 @@ class FrankaPanda(BaseArm):
         super().__init__()
         rospy.init_node(f"Panda_class_{name}")
         self.client = {}
-        self.client["pose"] = actionlib.SimpleActionClient('/arm/cartesian/pose',
+        self.client["pose"] = actionlib.SimpleActionClient('/arm/cartesian/pose/goal',
                                                            MoveToPoseAction)
         self.client["pose"].wait_for_server()
-        self.client["servo"] = actionlib.SimpleActionClient('/arm/cartesian/servo_pose',
+        self.client["servo"] = actionlib.SimpleActionClient('/arm/cartesian/servo_pose/goal',
                                                             ServoToPoseAction)
         self.client["servo"].wait_for_server()
-        self.client["named"] = actionlib.SimpleActionClient('/arm/cartesian/named_pose',
-                                                            MoveToNamedPoseAction)
-        self.client["named"].wait_for_server()
 
     def MoveToPose(self, coord, ref="base", speed=None, wait=True, method="pose"):
         """
@@ -131,7 +128,6 @@ if __name__ == "__main__":
     panda = FrankaPanda("prac")
     panda.MoveToPose((0.5, 0.3, 0.2))
     time.sleep(1)
-    panda.MoveHome()
     time.sleep(1)
     panda.ServoToPose((0.5, -0.2, 0.2))
     time.sleep(1)
