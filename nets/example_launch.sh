@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-echo "MAKING IMAGE FOR PPR-NET"
+NAME="example-net"  # Change this to suit network used.
 
-NAME="ppr-net"
-echo "IMAGE NAME: $NAME"
+echo "MAKING IMAGE FOR $NAME"
+echo "IMAGE NAME = $NAME"
 
 # Check to see if the image already exists
 have_image="$(sudo docker image ls -a | grep -c $NAME)"

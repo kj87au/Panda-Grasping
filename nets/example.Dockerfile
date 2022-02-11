@@ -1,6 +1,6 @@
 # This file is the build environment to use PPR-Net
 
-# Use the pytorch as a base image
+# Get the base image.
 FROM pytorch/pytorch:1.1.0-cuda10.0-cudnn7.5-devel
 
 # Next we need to update and install
