@@ -1,6 +1,6 @@
-# This file is the build environment to use PPR-Net
+# This file is the build environment to use Contact-GraspNet
 
-# Use the pytorch as a base image
+# Use the nvidia as a base image
 FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 
 
 ARG DEBIAN_FRONTEND=noninteractive

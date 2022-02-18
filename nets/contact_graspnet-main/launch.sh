@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-echo "MAKING IMAGE FOR CONTACT-NET"
-
 NAME="contact-net"
-echo "IMAGE NAME: $NAME"
+echo "MAKING IMAGE, NAME: $NAME"
 
 # Create a non-root user
 USER="contact"
@@ -20,7 +18,7 @@ is_running="$(sudo docker container ls | grep -c $NAME)"
 # echo "$have_container"
 # echo "$is_running"
 
-# Check for PPR-net image and if not found build it.
+# Check for image and if not found build it.
 if [[ "$have_image" -eq 1 ]]; then  
   echo "Image Found!"
 else
@@ -35,8 +33,8 @@ if [[ "$have_container" -eq 1 ]]; then
   echo "Container Found!"
 else
   echo "Starting Container"
-  echo "sudo docker run -it --gpus all --rm --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash"
-  sudo docker run -it --gpus all --rm --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash
+  echo "sudo docker run -it --gpus all --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash"
+  sudo docker run -it --gpus all --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" -v $(cd ../../ && pwd):/panda_grasp --network="host" $NAME bash
   exit 0
 fi
 
@@ -46,6 +44,7 @@ if [[ "$is_running" -eq 1 ]]; then
   # Check running containers
   con_name=$(sudo docker container ls | grep $NAME)
   con_name=${con_name:0:12}
+  xhost +local:docker
   sudo docker exec -it con_name bash
 else
   # Check stopped containers
@@ -53,8 +52,6 @@ else
   con_name=${con_name:0:12}
   
   echo "No running container found, Launching $con_name!"
+  xhost +local:docker  
   sudo docker start -i $con_name
-  
-  echo "Removing container $con_name"
-  sudo docker container rm $con_name
 fi
