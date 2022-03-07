@@ -26,7 +26,9 @@ if VIS:
 class VGN(object):
     def __init__(self, model_path, model_type, best=False, force_detection=False, qual_th=0.9, out_th=0.5, visualize=False):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.net = load_network(model_path, self.device, model_type=model_type)
+        self.net = load_network(model_path,
+                                self.device,
+                                model_type=model_type)
         self.net.eval()
         self.qual_th = qual_th
         self.best = best
@@ -49,15 +51,24 @@ class VGN(object):
         qual_vol, rot_vol, width_vol = predict(tsdf_vol, self.net, self.device)
 
 
-        qual_vol, rot_vol, width_vol = process(tsdf_vol, qual_vol, rot_vol, width_vol, out_th=self.out_th)
+        qual_vol, rot_vol, width_vol = process(tsdf_vol,
+                                               qual_vol,
+                                               rot_vol,
+                                               width_vol,
+                                               out_th=self.out_th)
         qual_vol = bound(qual_vol, voxel_size)
 
         if self.visualize:
             colored_scene_mesh = visual.affordance_visual(
                 qual_vol, rot_vol.transpose(1, 2, 3, 0),
                 scene_mesh, size, 40, **aff_kwargs)
-                
-        grasps, scores = select(qual_vol.copy(), rot_vol, width_vol, threshold=self.qual_th, force_detection=self.force_detection, max_filter_size=8 if self.visualize else 4)
+
+        grasps, scores = select(qual_vol.copy(),
+                                rot_vol,
+                                width_vol,
+                                threshold=self.qual_th,
+                                force_detection=self.force_detection,
+                                max_filter_size=8 if self.visualize else 4)
         toc = time.time() - tic
 
         grasps, scores = np.asarray(grasps), np.asarray(scores)

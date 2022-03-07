@@ -45,7 +45,7 @@ if [[ "$is_running" -eq 1 ]]; then
   con_name=$(sudo docker container ls | grep $NAME)
   con_name=${con_name:0:12}
   xhost +local:docker
-  sudo docker exec -it con_name bash
+  sudo docker exec -it $con_name bash
 else
   # Check stopped containers
   con_name=$(sudo docker container ls -a | grep $NAME)

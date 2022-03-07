@@ -1,8 +1,4 @@
 
-import sys
-#sys.path.insert(0, '/panda_grasp/nets/GIGA-main/src/')
-print(sys.path)
-
 import argparse
 import numpy as np
 import json

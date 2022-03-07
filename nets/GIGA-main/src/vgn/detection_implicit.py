@@ -23,9 +23,14 @@ class VGNImplicit(object):
         self.force_detection = force_detection
         self.out_th = out_th
         self.visualize = visualize
-        
         self.resolution = resolution
-        x, y, z = torch.meshgrid(torch.linspace(start=-0.5, end=0.5 - 1.0 / self.resolution, steps=self.resolution), torch.linspace(start=-0.5, end=0.5 - 1.0 / self.resolution, steps=self.resolution), torch.linspace(start=-0.5, end=0.5 - 1.0 / self.resolution, steps=self.resolution))
+        x, y, z = torch.meshgrid(torch.linspace(start=-0.5, end=0.5 - 1.0 / self.resolution,
+                                                steps=self.resolution),
+                                 torch.linspace(start=-0.5, end=0.5 - 1.0 / self.resolution,
+                                                steps=self.resolution),
+                                 torch.linspace(start=-0.5, end=0.5 - 1.0 / self.resolution,
+                                                steps=self.resolution))
+
         # 1, self.resolution, self.resolution, self.resolution, 3
         pos = torch.stack((x, y, z), dim=-1).float().unsqueeze(0).to(self.device)
         self.pos = pos.view(1, self.resolution * self.resolution * self.resolution, 3)
@@ -52,11 +57,30 @@ class VGNImplicit(object):
         rot_vol = rot_vol.reshape((self.resolution, self.resolution, self.resolution, 4))
         width_vol = width_vol.reshape((self.resolution, self.resolution, self.resolution))
 
-        qual_vol, rot_vol, width_vol = process(tsdf_process, qual_vol, rot_vol, width_vol, out_th=self.out_th)
-        qual_vol = bound(qual_vol, voxel_size)
+        qual_vol, rot_vol, width_vol = process(tsdf_process,
+                                               qual_vol,
+                                               rot_vol,
+                                               width_vol,
+                                               out_th=self.out_th)
+        qual_vol = bound(qual_vol,
+                         voxel_size)
         if self.visualize:
-            colored_scene_mesh = visual.affordance_visual(qual_vol, rot_vol, scene_mesh, size, self.resolution, **aff_kwargs)
-        grasps, scores = select(qual_vol.copy(), self.pos.view(self.resolution, self.resolution, self.resolution, 3).cpu(), rot_vol, width_vol, threshold=self.qual_th, force_detection=self.force_detection, max_filter_size=8 if self.visualize else 4)
+            colored_scene_mesh = visual.affordance_visual(qual_vol,
+                                                          rot_vol,
+                                                          scene_mesh,
+                                                          size,
+                                                          self.resolution,
+                                                          **aff_kwargs)
+        grasps, scores = select(qual_vol.copy(),
+                                self.pos.view(self.resolution,
+                                              self.resolution,
+                                              self.resolution,
+                                              3).cpu(),
+                                rot_vol,
+                                width_vol,
+                                threshold=self.qual_th,
+                                force_detection=self.force_detection,
+                                max_filter_size=8 if self.visualize else 4)
         toc = time.time() - tic
 
         grasps, scores = np.asarray(grasps), np.asarray(scores)
@@ -125,16 +149,16 @@ def process(
     tsdf_vol = tsdf_vol.squeeze()
 
     # smooth quality volume with a Gaussian
-    qual_vol = ndimage.gaussian_filter(
-        qual_vol, sigma=gaussian_filter_sigma, mode="nearest"
-    )
+    qual_vol = ndimage.gaussian_filter(qual_vol,
+                                       sigma=gaussian_filter_sigma,
+                                       mode="nearest")
 
     # mask out voxels too far away from the surface
     outside_voxels = tsdf_vol > out_th
     inside_voxels = np.logical_and(1e-3 < tsdf_vol, tsdf_vol < out_th)
-    valid_voxels = ndimage.morphology.binary_dilation(
-        outside_voxels, iterations=2, mask=np.logical_not(inside_voxels)
-    )
+    valid_voxels = ndimage.morphology.binary_dilation(outside_voxels,
+                                                      iterations=2,
+                                                      mask=np.logical_not(inside_voxels))
     qual_vol[valid_voxels == False] = 0.0
 
     # reject voxels with predicted widths that are too small or too large
@@ -160,7 +184,11 @@ def select(qual_vol, center_vol, rot_vol, width_vol, threshold=0.90, max_filter_
     # construct grasps
     grasps, scores = [], []
     for index in np.argwhere(mask):
-        grasp, score = select_index(qual_vol, center_vol, rot_vol, width_vol, index)
+        grasp, score = select_index(qual_vol,
+                                    center_vol,
+                                    rot_vol,
+                                    width_vol,
+                                    index)
         grasps.append(grasp)
         scores.append(score)
 
@@ -170,7 +198,7 @@ def select(qual_vol, center_vol, rot_vol, width_vol, threshold=0.90, max_filter_
     if best_only and len(sorted_grasps) > 0:
         sorted_grasps = [sorted_grasps[0]]
         sorted_scores = [sorted_scores[0]]
-        
+
     return sorted_grasps, sorted_scores
 
 

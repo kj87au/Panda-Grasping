@@ -14,9 +14,8 @@ RUN apt update && \
     add-apt-repository -y ppa:deadsnakes/ppa && \
     apt install --no-install-recommends -y python3.7 python3-pip python3-setuptools python3-distutils && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+    rm -rf /var/lib/apt/lists/* && \
+    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda
 
 # Put conda in path so we can use conda activate

@@ -34,7 +34,6 @@ def run(
     resolution=40,
     silence=False,
     save_freq=8,
-    
 ):
     """Run several rounds of simulated clutter removal experiments.
 
