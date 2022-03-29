@@ -4,29 +4,49 @@ import rospy
 import actionlib
 import time
 
-from armer_msgs.msg import (MoveToPoseAction, MoveToPoseGoal,
-                         ServoToPoseAction, ServoToPoseGoal,
-                         MoveToNamedPoseAction, MoveToNamedPoseGoal)
+import armer_msgs.msg
+from armer_msgs.msg import (MoveToPoseAction, MoveToPoseGoal)
+from franka_gripper.msg import (HomingAction, HomingGoal,
+                                MoveGoal, MoveAction)
 from geometry_msgs.msg import PoseStamped
-from base.robot_base import BaseArm
+import rospy
 
 
-class FrankaPanda(BaseArm):
+class FrankaPanda:
     """
-    Could make a Panda class to allow for higher level control?
+    Could make a Panda class tofrom geometry_msgs.msg import PoseStamped
+    allow for higher level control?
     """
-    def __init__(self, name, *args, **kwargs):
-        super().__init__()
+    def __init__(self, name):
         rospy.init_node(f"Panda_class_{name}")
-        self.client = {}
-        self.client["pose"] = actionlib.SimpleActionClient('/arm/cartesian/pose/goal',
-                                                           MoveToPoseAction)
-        self.client["pose"].wait_for_server()
-        self.client["servo"] = actionlib.SimpleActionClient('/arm/cartesian/servo_pose/goal',
-                                                            ServoToPoseAction)
-        self.client["servo"].wait_for_server()
 
-    def MoveToPose(self, coord, ref="base", speed=None, wait=True, method="pose"):
+        print("Starting Arm.")
+        # Final Home setting
+        self.home = [0.3,
+                     0.0,
+                     0.5]
+
+        # get our client and wait for it to load up
+        self.client = actionlib.SimpleActionClient('/arm/cartesian/pose',
+                                                   MoveToPoseAction)
+        self.client.wait_for_server()
+        print("Arm started!")
+        
+        print("Homing Gripper.")
+        self.gripper = actionlib.SimpleActionClient('/franka_gripper/homing',
+                                                    HomingAction)
+        self.gripper.wait_for_server()
+
+        goal = HomingGoal()
+        self.gripper.send_goal_and_wait(goal)
+        print("Gripper Homed!")
+
+        print("Initalising Gripper.")
+        client = actionlib.SimpleActionClient('/franka_gripper/move', MoveAction)
+        client.wait_for_server()
+        print("Gripper Started!")
+
+    def MoveToPose(self, coord, ref="base", speed=None, wait=True):
         """
         Simplified move to pose.
 
@@ -38,8 +58,6 @@ class FrankaPanda(BaseArm):
         Param wait (bool): Wait for arm to move.
         Return (bool): True if move was successful else false.
         """
-        if not self.check_pose(coord):
-            return False
 
         # Create a target pose
         target = PoseStamped()
@@ -62,41 +80,33 @@ class FrankaPanda(BaseArm):
         target.pose.orientation.w = 0.00
 
         # Create goal from target pose
-        if method in ["pose", "servo"]:
-            if method == "pose":
-                if speed is None:
-                    goal = MoveToPoseGoal(goal_pose=target)
-                else:
-                    goal = MoveToPoseGoal(goal_pose=target, speed=speed)
-            else:
-                goal = ServoToPoseGoal(stamped_pose=target, scaling=.5)
-            # Send goal and wait for it to finish
-            return self.client[method].send_goal_and_wait(goal)
-        return False
-
-    def ServoToPose(self, coord, ref="base", speed=None, wait=True):
-        """
-
-        """
-        return self.MoveToPose(coord, ref, speed, wait, method="servo")
+        if speed is None:
+            goal = MoveToPoseGoal()
+            goal.pose_stamped = target
+        else:
+            goal = MoveToPoseGoal()
+            goal.pose_stamped = target
+            goal.speed = speed
+        # Send goal and wait for it to finish
+        return self.client.send_goal_and_wait(goal)
 
     def NamedToPose(self, name):
         """
 
         """
-        return self.client["named"].send_goal_and_wait(MoveToNamedPoseGoal(pose_name=name))
+        raise NotImplementedError
 
-    def GraspFromBase(self):
+    def GraspFromBase(self, goal):
         """
 
         """
-        pass
+        raise NotImplementedError
 
     def GraspFromCamera(self):
         """
 
         """
-        pass
+        raise NotImplementedError
 
     def MoveHome(self):
         """
@@ -107,30 +117,33 @@ class FrankaPanda(BaseArm):
 
         target.header.frame_id = 'panda_link0'
 
-        home = self.home
-        target.pose.position.x = home[0]
-        target.pose.position.y = home[1]
-        target.pose.position.z = home[2]
+        target.pose.position.x = self.home[0]
+        target.pose.position.y = self.home[1]
+        target.pose.position.z = self.home[2]
 
-        target.pose.orientation.x = -1.00
+        target.pose.orientation.x = 1.00
         target.pose.orientation.y = 0.00
         target.pose.orientation.z = 0.00
         target.pose.orientation.w = 0.00
 
-        goal = MoveToPoseGoal(goal_pose=target)
+        goal = MoveToPoseGoal()
+        goal.pose_stamped = target
 
         # Send goal and wait for it to finish
-        return self.client["pose"].send_goal_and_wait(goal)
+        self.client.send_goal_and_wait(goal)
 
 
 if __name__ == "__main__":
     # main()
     panda = FrankaPanda("prac")
+    print("Moving to pose (0.5, 0.3, 0.2)")
     panda.MoveToPose((0.5, 0.3, 0.2))
     time.sleep(1)
+    print("Moving to pose (0.5, -0.2, 0.2)")
+    panda.MoveToPose((0.5, -0.2, 0.2))
     time.sleep(1)
-    panda.ServoToPose((0.5, -0.2, 0.2))
+    print("Moving to pose (0.7, 0.2, 0.2)")
+    panda.MoveToPose((0.7, 0.2, 0.2))
     time.sleep(1)
-    panda.ServoToPose((0.7, 0.2, 0.2))
-    time.sleep(1)
-    panda.NamedToPose('grasp_home')
+    print("Home Time!")
+    panda.MoveHome()
