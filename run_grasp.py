@@ -5,9 +5,9 @@ This is the main file for the Grasping Algorithm Test Suite (RATS)
 """
 
 # IMPORTS
-from src.Franka import FrankaPanda
-from src.DLauncher import DockerLauncher
-from src.RSCamera import RealSenseCamera
+from src.ArmController import FrankaPanda
+from src.DockerLaunch import ContainerController
+from src.CamController import RealSenseCamera
 from utils.parser import GATSParser
 # GLOBALS
 

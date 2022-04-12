@@ -10,7 +10,7 @@ import docker
 # GLOBALS
 
 
-class DockerLauncher:
+class ContainerController:
     """
 
     """

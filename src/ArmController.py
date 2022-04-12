@@ -9,24 +9,21 @@ from armer_msgs.msg import (MoveToPoseAction, MoveToPoseGoal)
 from franka_gripper.msg import (HomingAction, HomingGoal,
                                 MoveGoal, MoveAction)
 from geometry_msgs.msg import PoseStamped
+from base.robot_base import BaseArm
 import rospy
 
 
 
-class FrankaPanda:
+class FrankaPanda(BaseArm):
     """
     Could make a Panda class tofrom geometry_msgs.msg import PoseStamped
     allow for higher level control?
     """
-    def __init__(self, name, home_arm=True, home_gripper=False):
-        rospy.init_node(f"Panda_class_{name}")
+    def __init__(self, name, arm_type="panda", home_arm=True, home_gripper=False):
+        super().__init__()
+        rospy.init_node(f"{arm_type}_class_{name}")
 
         print("Initalising Arm.")
-        # Final Home setting
-        self.home = [0.5,
-                     0.0,
-                     0.7]
-
         # get our client and wait for it to load up
         self.arm = actionlib.SimpleActionClient('/arm/cartesian/pose',
                                                    MoveToPoseAction)
@@ -97,23 +94,20 @@ class FrankaPanda:
         # Send goal and wait for it to finish
         return self.arm.send_goal_and_wait(goal)
 
-    def NamedToPose(self, name):
-        """
-
-        """
-        raise NotImplementedError
-
     def GraspFromBase(self, goal):
         """
 
         """
         raise NotImplementedError
+        # Move to position close to goal with rotation and orenation correct
 
-    def GraspFromCamera(self):
-        """
+        # Move forward 5-10cm into grasp position
 
-        """
-        raise NotImplementedError
+        # Close Grasper
+
+        # Move Object up
+
+        # Place in goal location
 
     def MoveHome(self):
         """
@@ -124,14 +118,14 @@ class FrankaPanda:
 
         target.header.frame_id = 'panda_link0'
 
-        target.pose.position.x = self.home[0]
-        target.pose.position.y = self.home[1]
-        target.pose.position.z = self.home[2]
+        target.pose.position.x = self.homeX
+        target.pose.position.y = self.homeY
+        target.pose.position.z = self.homeZ
 
-        target.pose.orientation.x = 1.00
-        target.pose.orientation.y = 0.00
-        target.pose.orientation.z = 0.00
-        target.pose.orientation.w = 0.00
+        target.pose.orientation.x = self.homeRX 
+        target.pose.orientation.y = self.homeRY
+        target.pose.orientation.z = self.homeRZ
+        target.pose.orientation.w = self.homeRW
 
         goal = MoveToPoseGoal()
         goal.pose_stamped = target
@@ -149,8 +143,6 @@ def main():
     # Settle and then get image.
     time.sleep(0.5)
 
-
-    time.sleep(0.5)
     print("Home Time!")
     panda.MoveHome()
 
